@@ -1,19 +1,20 @@
 {
-    "name": "donation_alerts_discord_bot",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-      "start": "nodemon index.js",
-      "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-      "discord.js": "^14.6.0",
-      "dotenv": "^16.0.3",
-      "express": "^4.18.2",
-      "moralis": "^2.6.7",
-      "nodemon": "^2.0.20"
-    }
+  "name": "@cryptodevelopmentservices/donation_notification_bot",
+  "version": "0.0.1",
+  "description": "",
+  "author": "CryptoLover705 - Crypto Development Services",
+  "repository": "git@github.com:cryptodevelopmentservices/donation_notification_bot.git",
+  "main": "index.js",
+  "browser": "index.js",
+  "scripts": {},
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "axios": "^0.20.0",
+    "discord.js": "^12.3.1",
+    "ethers": "^5.0.14",
+    "winston": "^3.3.3"
   }
+}

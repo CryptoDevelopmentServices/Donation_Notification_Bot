@@ -1,0 +1,34 @@
+[
+  {
+    "inputs":[],
+    "stateMutability":"nonpayable",
+    "type":"constructor"
+  },
+  {
+    "anonymous":false,
+    "inputs":
+    [
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"from",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"amount",
+        "type":"uint256"
+      }
+    ],
+      "name":"Donate",
+      "type":"event"
+  },
+  {
+    "inputs":[],
+    "name":"newDonation",
+    "outputs":[],
+    "stateMutability":"payable",
+    "type":"function"
+  }
+]
