@@ -1,32 +1,41 @@
-const Discord = require('discord.js')
+const discord = require('discord.js')
 const ethers = require('ethers')
-// const winston = require('winston')
+const express = require("express");
+const app = express();
+const port = 3000;
+require("dotenv").config();
+const winston = require('winston')
 
 
 
 
-// const logger = winston.createLogger({
-//   level: 'info',
-//   format: winston.format.json(),
-//   defaultMeta: { service: 'user-service' },
-//   transports: [
-//     new winston.transports.File({ filename: 'error.log', level: 'error' }),
-//     new winston.transports.File({ filename: 'combined.log' }),
-//   ],
-// });
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: { service: 'user-service' },
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
+});
 
 if (process.env.NODE_ENV !== 'production') {
-  // logger.add(new winston.transports.Console({
-  //   format: winston.format.simple(),
-  // }));
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple(),
+  }));
 }
 
+app.use(express.json());
 
 // TODO: Switch on chainId
 //       support version #? have the reference frontend support version #s?
 //       possibly contract addresses to watch
 
-const client = new Discord.Client()
+const client = new discord.Client({
+  intents: [],
+});
+
+client.login(process.env.TOKEN)
 
 client.on('ready', () => {
   console.log(`Ready n' Logged in as ${client.user.tag}!`)
@@ -103,7 +112,7 @@ const getLogs = async (_result) => {
       newDonation
     }
   } catch (e) {
-    // logger.error(e)
+    logger.error(e)
   }
 }
 
@@ -111,24 +120,32 @@ bscProvider.on(filter, async (result) => {
   const newDonationArgs = await getLogs(result)
 
   console.log(`New Donation Found!`, newDonationArgs.newDonation)
-  // logger.info(`found result!`, newDonationArgs.newDonation)
+  logger.info(`found result!`, newDonationArgs.newDonation)
 
   sendDiscordMsg(newDonationArgs)
 })
 
 
-bscProvider.resetEventsBlock(7294893)
+bscProvider.resetEventsBlock(22688852)
 
-const sendDiscordMsg = async ({newDonation, req}) => {
+const sendDiscordMsg = async ({newDonation}) => {
+  app.post("newDonationArgs", async (req, res) => {
   const { body } = req;
   let from = body.txs[0].fromAddress;
   let amount = Number(body.txs[0].value / 1E18);
   const url = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76#tokentxns${newDonation}`
 
-  await client.login(process.env.TOKEN)
+  
   const channel = await client.channels.fetch('820375466271178765')
   channel.send(`New Donation submitted by \`${from}\`, for ${amount.toFixed(4)} BNB!! ${url}`)
   channel.send(`Thank you \`${from}\`, for your donation`);
+  return res.status(200).json();
 
-  console.log(`sent msg with url ${url}`)
+  // console.log(`sent msg with url ${url}`)
+})
+
 }
+
+app.listen(port, () => {
+  console.log(`Listening for new donations`);
+});
