@@ -32,7 +32,7 @@ app.use(express.json());
 //       possibly contract addresses to watch
 
 const client = new discord.Client({
-  intents: [],
+  // intents: [],
 });
 
 client.login(process.env.TOKEN)
@@ -134,7 +134,7 @@ const sendDiscordMsg = async ({from , amount}) => {
   const { body } = req;
   let from = body.txs[0].fromAddress;
   let amount = Number(body.txs[0].value / 1E18);
-  const url = `https://bscscan.com/address/${DonationContractAddress}#tokentxns`
+  const url = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76`
 
   
   const channel = await client.channels.fetch('820375466271178765')
@@ -144,7 +144,7 @@ const sendDiscordMsg = async ({from , amount}) => {
 
   
 })
-  console.log(`sent msg with url ${url}`)
+  
 }
 
 app.listen(port, () => {
