@@ -91,7 +91,7 @@ const DonationContract = new ethers.Contract(
 )
 
 let topic = ethers.utils.id('Donate(address,uint256)')
-// let topic = ethers.utils.id('CompoundPrizePoolCreated(address,address,address)')
+
 
 let filter = {
   topics: [topic],
@@ -105,11 +105,13 @@ const getLogs = async (_result) => {
       _result
     )
 
-    const newDonation = eventLog.args.newDonation
+    const from = eventLog.args.from
+    const amount = eventLog.args.amount
     
 
     return {
-      newDonation
+      from,
+      amount
     }
   } catch (e) {
     logger.error(e)
@@ -119,21 +121,20 @@ const getLogs = async (_result) => {
 bscProvider.on(filter, async (result) => {
   const newDonationArgs = await getLogs(result)
 
-  console.log(`New Donation Found!`, newDonationArgs.newDonation)
-  logger.info(`found result!`, newDonationArgs.newDonation)
-
+  console.log(`New Donation Found! From`, newDonationArgs.from, `For`, newDonationArgs.amount , `BNB`)
+  logger.info(`found result! From`, newDonationArgs.from, `For`, newDonationArgs.amount, `BNB`)
+  
   sendDiscordMsg(newDonationArgs)
 })
 
-
 bscProvider.resetEventsBlock(22688852)
 
-const sendDiscordMsg = async ({newDonation}) => {
+const sendDiscordMsg = async ({from , amount}) => {
   app.post("newDonationArgs", async (req, res) => {
   const { body } = req;
   let from = body.txs[0].fromAddress;
   let amount = Number(body.txs[0].value / 1E18);
-  const url = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76#tokentxns${newDonation}`
+  const url = `https://bscscan.com/address/${DonationContractAddress}#tokentxns`
 
   
   const channel = await client.channels.fetch('820375466271178765')
@@ -141,9 +142,9 @@ const sendDiscordMsg = async ({newDonation}) => {
   channel.send(`Thank you \`${from}\`, for your donation`);
   return res.status(200).json();
 
-  // console.log(`sent msg with url ${url}`)
+  
 })
-
+  console.log(`sent msg with url ${url}`)
 }
 
 app.listen(port, () => {
