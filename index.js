@@ -137,9 +137,9 @@ const sendDiscordMsg = async ({from , amount}) => {
   const url = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76`
 
   
-  const channel = await client.channels.fetch('820375466271178765')
-  channel.send(`New Donation submitted by \`${from}\`, for ${amount.toFixed(4)} BNB!! ${url}`)
-  channel.send(`Thank you \`${from}\`, for your donation`);
+  let channel = client.channels.cache.get('820375466271178765')
+  channel.send(`New Donation submitted by \`${from}\`, for ${amount.toFixed(4)} BNB!! ${url} \n\n Thank you \`${from}\`, for your donation`)
+  
   return res.status(200).json();
 
   
