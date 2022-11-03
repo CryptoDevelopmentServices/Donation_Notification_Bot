@@ -1,4 +1,4 @@
-const discord = require('discord.js')
+const { Client, Intents } = require('discord.js')
 const ethers = require('ethers')
 const express = require("express");
 const app = express();
@@ -31,14 +31,15 @@ app.use(express.json());
 //       support version #? have the reference frontend support version #s?
 //       possibly contract addresses to watch
 
-const client = new discord.Client({
-  // intents: [],
+const client = new Client({
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
 
 client.login(process.env.TOKEN)
 
 client.on('ready', () => {
   console.log(`Ready n' Logged in as ${client.user.tag}!`)
+  client.user.setActivity({name: "Watching for donations.."});
 })
 
 
@@ -135,16 +136,30 @@ const sendDiscordMsg = async ({from , amount}) => {
   let from = body.txs[0].fromAddress;
   let amount = Number(body.txs[0].value / 1E18);
   const url = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76`
+  const donationUrl = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76#writeContract`
+  const donationAddress = `https://bscscan.com/address/0x64ecf1f9bd4edf6267f6f4de42ad0979f6127727#internaltx`
 
   
   let channel = client.channels.cache.get('820375466271178765')
-  channel.send(`New Donation submitted by \`${from}\`, for ${amount.toFixed(4)} BNB!! ${url} \n\n Thank you \`${from}\`, for your donation`)
-  
+  channel.send(`
+    New Donation submitted by \`${from}\`, for ${amount.toFixed(8)} BNB!! ${url} 
+    \n\n Thank you \`${from}\`, for your donation!
+    `)
+  channel.send(`
+    Would you like to help us expand & improve our services?
+    \n If you answered yes, then you can donate any amount you would like using our donation contract
+    \n ${donationUrl}
+    `)
+    channel.send(`
+    \`Note about donations\`
+    \n \`All donations received will be used to help us expand and improve our services\`
+    \n\`Where we use the funds will be down to you guys!!\`
+    You van view what address the donations are going ${donationAddress}
+    `)
   return res.status(200).json();
 
   
-})
-  
+})  
 }
 
 app.listen(port, () => {
