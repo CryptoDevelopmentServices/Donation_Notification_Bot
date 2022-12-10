@@ -10,7 +10,11 @@ client.login(process.env.TOKEN);
 
 client.on('ready', () => {
   console.log(`Ready n' Logged in as ${client.user.tag}!`);
-  client.user.setActivity({ name: `Watching for donations on ${DonationContractAddress}`, type: 'WATCHING' });
+  // Set the bot's activity
+  client.user.setActivity({
+    name: `Watching for donations on ${DonationContractAddress}`,
+    type: 'WATCHING'
+  });
 });
 
 const abi = [
@@ -21,8 +25,7 @@ const abi = [
   },
   {
     "anonymous":false,
-    "inputs":
-    [
+    "inputs": [
       {
         "indexed":false,
         "internalType":"address",
@@ -72,7 +75,6 @@ const getLogs = async (_result) => {
 
     const from = eventLog.args.from
     const amount = eventLog.args.amount
-    
 
     return {
       from,
@@ -91,37 +93,19 @@ bscProvider.on(filter, async (result) => {
   sendDiscordMsg(newDonationArgs.from, newDonationArgs.amount);
 });
 
-
 const sendDiscordMsg = async (_from, _amount) => {
+  // Get the channel by its ID
   const channel = client.channels.cache.get('820375466271178765');
   if (!channel) {
     return;
   }
 
+  // Reset the block for events
   bscProvider.resetEventsBlock(22688852);
-  channel.send("newDonationArgs", async (req, res) => {
-    const { body } = req;
-    let from = body.txs[0].fromAddress;
-    let amount = Number(body.txs[0].value / 1E18);
-    const url = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76`
-    const donationUrl = `https://bscscan.com/address/0xae611bea165249dee17613b067fc25532f422d76#writeContract`
-    const donationAddress = `https://bscscan.com/address/0x64ecf1f9bd4edf6267f6f4de42ad0979f6127727#internaltx`
-    
-    channel.send(`
-      New Donation submitted by \`${from}\`, for ${amount.toFixed(8)} BNB!! ${url} 
-      \n\n Thank you \`${from}\`, for your donation!
-      `);
-    channel.send(`
-      Would you like to help us expand & improve our services?
-      \n If you answered yes, then you can donate any amount you would like using our donation contract
-      \n ${donationUrl}
-      `);
-      channel.send(`
-      \`Note about donations\`
-      \n \`All donations received will be used to help us expand and improve our services\`
-      \n\`Where we use the funds will be down to you guys!!\`
-      You van view what address the donations are going ${donationAddress}
-      `);
-    return res.status(200).json();
-  });  
+  
+  // Send a message to the channel
+  await channel.send(`New donation received from ${_from} for ${_amount} BNB!`);
+  
+  // Return a successful response
+  return res.status(200).json();
 };
