@@ -1,12 +1,15 @@
-const { Client, Intents } = require('discord.js');
+const { Client } = require('discord.js');
 const ethers = require('ethers');
 require("dotenv").config();
+const abi = require('./abi.json');
 // Define the DonationContractAddress variable before using it
-const DonationContractAddress = '0xae611bea165249dee17613b067fc25532f422d76';
+const DonationContractAddress = process.env.DONATION_ADDRESS;
 
 // Create a new Discord client
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+  ws: {
+    intents: ['GUILDS', 'GUILD_MESSAGES']
+  }
 });
 
 // Log the client in using the token from the environment variables
@@ -19,42 +22,6 @@ client.on('ready', () => {
   
   client.user.setActivity({ name: `Watching for donations on ${DonationContractAddress}`, type: 'WATCHING' });
 });
-
-// Define the ABI of the contract
-const abi = [
-  {
-    "inputs":[],
-    "stateMutability":"nonpayable",
-    "type":"constructor"
-  },
-  {
-    "anonymous":false,
-    "inputs":
-    [
-      {
-        "indexed":false,
-        "internalType":"address",
-        "name":"from",
-        "type":"address"
-      },
-      {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"amount",
-        "type":"uint256"
-      }
-    ],
-      "name":"Donate",
-      "type":"event"
-  },
-  {
-    "inputs":[],
-    "name":"newDonation",
-    "outputs":[],
-    "stateMutability":"payable",
-    "type":"function"
-  }
-];
 
 // Create a new JSON-RPC provider for Binance Smart Chain
 const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/', { name: 'binance', chainId: 56 });
@@ -95,7 +62,7 @@ bscProvider.on(filter, async (result) => {
 
 const sendDiscordMsg = async (_from, _amount) => {
   // Get the channel by its ID
-  const channel = client.channels.cache.get('820375466271178765');
+  const channel = client.channels.fetch(process.env.CHANNEL_ID);
   console.log(channel);
   if (!channel) {
     return;
