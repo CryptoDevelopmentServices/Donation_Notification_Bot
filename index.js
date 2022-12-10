@@ -2,21 +2,24 @@ const { Client, Intents } = require('discord.js');
 const ethers = require('ethers');
 require("dotenv").config();
 
+// Create a new Discord client
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
 
+// Log the client in using the token from the environment variables
 client.login(process.env.TOKEN);
 
+// Set the client's activity when it is ready
 client.on('ready', () => {
   console.log(`Ready n' Logged in as ${client.user.tag}!`);
-  // Set the bot's activity
-  client.user.setActivity({
-    name: `Watching for donations on ${DonationContractAddress}`,
-    type: 'WATCHING'
-  });
+
+  // Define the DonationContractAddress variable before using it
+  const DonationContractAddress = '0xae611bea165249dee17613b067fc25532f422d76';
+  client.user.setActivity({ name: `Watching for donations on ${DonationContractAddress}`, type: 'WATCHING' });
 });
 
+// Define the ABI of the contract
 const abi = [
   {
     "inputs":[],
@@ -25,7 +28,8 @@ const abi = [
   },
   {
     "anonymous":false,
-    "inputs": [
+    "inputs":
+    [
       {
         "indexed":false,
         "internalType":"address",
@@ -51,15 +55,16 @@ const abi = [
   }
 ];
 
+// Create a new JSON-RPC provider for Binance Smart Chain
 const bscProvider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/', { name: 'binance', chainId: 56 });
 
-const DonationContractAddress = '0xae611bea165249dee17613b067fc25532f422d76'
 const DonationContract = new ethers.Contract(
   DonationContractAddress,
   abi,
   bscProvider
 );
 
+// Specify the toping of the event you want to listen too
 const topic = ethers.utils.id('Donate(address,uint256)');
 
 const filter = {
@@ -69,17 +74,8 @@ const filter = {
 
 const getLogs = async (_result) => {
   try {
-    const eventLog = DonationContract.interface.parseLog(
-      _result
-    )
-
-    const from = eventLog.args.from
-    const amount = eventLog.args.amount
-
-    return {
-      from,
-      amount
-    }
+    // Return the full parsed log object, rather than just the from and amount values
+    return DonationContract.interface.parseLog(_result);
   } catch (e) {
     console.error(e)
   }
@@ -90,6 +86,7 @@ bscProvider.on(filter, async (result) => {
 
   console.log(`New Donation Found! From`, newDonationArgs.from, `For`, newDonationArgs.amount , `BNB`)
 
+  // Call the sendDiscordMsg function and pass it the from and amount values
   sendDiscordMsg(newDonationArgs.from, newDonationArgs.amount);
 });
 
@@ -104,8 +101,20 @@ const sendDiscordMsg = async (_from, _amount) => {
   bscProvider.resetEventsBlock(22688852);
   
   // Send a message to the channel
-  await channel.send(`New donation received from ${_from} for ${_amount} BNB!`);
-  
-  // Return a successful response
+  try {
+    await channel.send(`New donation received from ${_from} for ${_amount} BNB!`);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+
+  return true;
+};
+
+const success = sendDiscordMsg(_from, _amount);
+
+if (success) {
   return res.status(200).json();
+} else {
+  return res.status(500).json();
 };
