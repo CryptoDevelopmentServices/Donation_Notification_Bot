@@ -2,9 +2,11 @@ const { Client } = require('discord.js');
 const ethers = require('ethers');
 require("dotenv").config();
 const abi = require('./abi.json');
+console.log(`ABI:`, abi);
 
 // Define the DonationContractAddress variable before using it
 const DonationContractAddress = process.env.DONATION_ADDRESS;
+console.log(`DONATION_ADDRESS: ${process.env.DONATION_ADDRESS}`);
 
 // Create a new Discord client
 const client = new Client({
@@ -36,6 +38,10 @@ const DonationContract = new ethers.Contract(
 // Specify the topic of the event you want to listen to
 const topic = ethers.utils.id('Donate(address,uint256)');
 
+
+// Log the topic variable to the console to check if it is correct
+console.log('topic:', topic);
+
 const filter = {
   topics: [topic],
   fromBlock: 22688852
@@ -52,20 +58,34 @@ const getLogs = async (_result) => {
 
 // Listen for events using the filter
 bscProvider.on(filter, async (result) => {
+  // Log the result argument to the console to check if it is correct
+  console.log('result:', result);
   console.log('New event received!');
 
-  const newDonationArgs = await getLogs(result)
+  // Add the missing data and blockNumber properties to the result object
+  result.data = result.data || '';
+  result.blockNumber = result.blockNumber || 0;
 
-  console.log(`New Donation Found! From`, newDonationArgs.from, `For`, newDonationArgs.amount , `BNB`)
+  // Pass the modified result object to the getLogs function
+  const newDonationArgs = await getLogs(result);
 
-  // Call the sendDiscordMsg function and pass it the from and amount values
-  sendDiscordMsg(newDonationArgs.from, newDonationArgs.amount);
+  // Check if the newDonationArgs object exists and if it has the expected properties
+  if (newDonationArgs && newDonationArgs.from && newDonationArgs.amount) {
+    console.log(`New Donation Found! From`, newDonationArgs.from, `For`, newDonationArgs.amount , `BNB`);
+
+    // Call the sendDiscordMsg function and pass it the from and amount values
+    sendDiscordMsg(newDonationArgs.from, newDonationArgs.amount);
+  } else {
+    console.error(`Error: Invalid or missing newDonationArgs object.`);
+  }
 });
 
 const sendDiscordMsg = async (_from, _amount) => {
+  console.log(`_from:`, _from);
+  console.log(`_amount:`, _amount);
   // Get the channel by its ID
   const channel = await client.channels.fetch(process.env.CHANNEL_ID);
-  console.log(channel);
+  console.log(`CHANNEL_ID: ${process.env.CHANNEL_ID}`);
   if (!channel) {
     return;
   }
