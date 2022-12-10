@@ -70,11 +70,11 @@ bscProvider.on(filter, async (result) => {
   const newDonationArgs = await getLogs(result);
 
   // Check if the newDonationArgs object exists and if it has the expected properties
-  if (newDonationArgs && newDonationArgs.from && newDonationArgs.amount) {
-    console.log(`New Donation Found! From`, newDonationArgs.from, `For`, newDonationArgs.amount , `BNB`);
+  if (newDonationArgs && newDonationArgs._from && newDonationArgs._amount) {
+    console.log(`New Donation Found! From`, newDonationArgs._from, `For`, newDonationArgs._amount , `BNB`);
 
     // Call the sendDiscordMsg function and pass it the from and amount values
-    sendDiscordMsg(newDonationArgs.from, newDonationArgs.amount);
+    sendDiscordMsg(newDonationArgs._from, newDonationArgs._amount);
   } else {
     console.error(`Error: Invalid or missing newDonationArgs object.`);
   }
