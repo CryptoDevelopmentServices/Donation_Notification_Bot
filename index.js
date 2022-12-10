@@ -2,6 +2,7 @@ const { Client } = require('discord.js');
 const ethers = require('ethers');
 require("dotenv").config();
 const abi = require('./abi.json');
+
 // Define the DonationContractAddress variable before using it
 const DonationContractAddress = process.env.DONATION_ADDRESS;
 
@@ -19,7 +20,7 @@ client.login(process.env.TOKEN);
 client.on('ready', () => {
   console.log(`Ready n' Logged in as ${client.user.tag}!`);
 
-  
+  // Set the activity
   client.user.setActivity({ name: `Watching for donations on ${DonationContractAddress}`, type: 'WATCHING' });
 });
 
@@ -32,7 +33,7 @@ const DonationContract = new ethers.Contract(
   bscProvider
 );
 
-// Specify the toping of the event you want to listen too
+// Specify the topic of the event you want to listen to
 const topic = ethers.utils.id('Donate(address,uint256)');
 
 const filter = {
@@ -49,6 +50,7 @@ const getLogs = async (_result) => {
   }
 };
 
+// Listen for events using the filter
 bscProvider.on(filter, async (result) => {
   console.log('New event received!');
 
@@ -62,14 +64,11 @@ bscProvider.on(filter, async (result) => {
 
 const sendDiscordMsg = async (_from, _amount) => {
   // Get the channel by its ID
-  const channel = client.channels.fetch(process.env.CHANNEL_ID);
+  const channel = await client.channels.fetch(process.env.CHANNEL_ID);
   console.log(channel);
   if (!channel) {
     return;
   }
-
-  // Reset the block for events
-  bscProvider.resetEventsBlock(22688852);
   
   // Send a message to the channel
   try {
