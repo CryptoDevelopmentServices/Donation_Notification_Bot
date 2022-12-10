@@ -1,6 +1,8 @@
 const { Client, Intents } = require('discord.js');
 const ethers = require('ethers');
 require("dotenv").config();
+// Define the DonationContractAddress variable before using it
+const DonationContractAddress = '0xae611bea165249dee17613b067fc25532f422d76';
 
 // Create a new Discord client
 const client = new Client({
@@ -14,8 +16,7 @@ client.login(process.env.TOKEN);
 client.on('ready', () => {
   console.log(`Ready n' Logged in as ${client.user.tag}!`);
 
-  // Define the DonationContractAddress variable before using it
-  const DonationContractAddress = '0xae611bea165249dee17613b067fc25532f422d76';
+  
   client.user.setActivity({ name: `Watching for donations on ${DonationContractAddress}`, type: 'WATCHING' });
 });
 
@@ -82,6 +83,8 @@ const getLogs = async (_result) => {
 };
 
 bscProvider.on(filter, async (result) => {
+  console.log('New event received!');
+
   const newDonationArgs = await getLogs(result)
 
   console.log(`New Donation Found! From`, newDonationArgs.from, `For`, newDonationArgs.amount , `BNB`)
@@ -93,6 +96,7 @@ bscProvider.on(filter, async (result) => {
 const sendDiscordMsg = async (_from, _amount) => {
   // Get the channel by its ID
   const channel = client.channels.cache.get('820375466271178765');
+  console.log(channel);
   if (!channel) {
     return;
   }
@@ -109,12 +113,4 @@ const sendDiscordMsg = async (_from, _amount) => {
   }
 
   return true;
-};
-
-const success = sendDiscordMsg(_from, _amount);
-
-if (success) {
-  return res.status(200).json();
-} else {
-  return res.status(500).json();
 };
